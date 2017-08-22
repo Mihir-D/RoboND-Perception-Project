@@ -36,64 +36,62 @@ You're reading it!
 
 `Note: Please refer to code object_recognition.py and NOT project_template.py.`
 
-### Exercise 1, 2 and 3 pipeline implemented
+### Exercise 1, 2 and 3 pipeline implemented. These comprise the pcl_callback() function in object_recognition.py.
 #### 1. Complete Exercise 1 steps. Pipeline for filtering and RANSAC plane fitting implemented.
 
 I have implemented following steps from Exercise 1:
 
-1. Convert ROS message to PCL
+**1. Convert ROS message to PCL**
 
-2. Implement outlier filter to remove noise in camera image:
+**2. Implement outlier filter to remove noise in camera image:** 
 As the image obtained from camera has a lot of noise (see the camera image published on topic name???), I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant.
 
-3. Perform Voxel Downgrid sampling to eliminate redundant computations:
+**3. Perform Voxel Downgrid sampling to eliminate redundant computations:** 
 I initially started with a Leaf size of 0.01. It would work well for the `test1.world`, but misidentified one or more objects in the other two test worlds and also couldn't identify one object in `test3.world`. I then reduced the leaf size till 0.003, at which all objects in all test scenes were recognized correctly.
 
 Image??
 
-4. Implement passthrough filter in Z direction to focus only on the table and object scene
+**4. Implement passthrough filter in Z direction to focus only on the table and object scene:** 
 I implemented this filter such that the output of the filter contained only the table and objects on the table. (It eliminates everything else e.g. floor etc. which lies outside of the band of passthrough filter).
 
-5. Impement passthrough filter in X direction to remove edge of the table. 
+**5. Impement passthrough filter in X direction to remove edge of the table:** 
 This filter removes the edge of the table which otherwise would appear along with objects when RANSAC plane segementation is performed for table plane. (note: similar results can also be obtained by finding an optimum lower limit for filtering performed in step 4.)
 
-6. RANSAC plane segmentation is performed.
+**6. RANSAC plane segmentation is performed:**
 I performed RANSAC plane segmentation to separate table from the objects. 
 
-7. The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation.
-
+**7. The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation:** 
 The inliers of the RANSAC filtering output are the table points whereas the outliers are all objects points, as the object planes are not parallel to table plane. Thus table cloud and objects point cloud are extracted.
 
 #### 2. Complete Exercise 2 steps: Pipeline including clustering for segmentation implemented.  
 
-8. Euclidean clustering is performed to detect separate object clusters.
-
+**8. Euclidean clustering is performed to detect separate object clusters:** 
 I found the appropriate range for cluster size for Euclidean clustering. For cluster size less than 5000, some large objects were getting ommitted in the filtering. Hence the upper limit is 5000. Also, lower limit if increased from 100 would eliminated the small objects after filtering.
 
-9. Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering.
+**9. Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering. See Images below**
 
 image???
 
-10. Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.
+**10. Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.**
 
 #### 2. Complete Exercise 3 Steps.  Features extracted and SVM trained.  Object recognition implemented.
 
 #### Feature Extraction and training SVM:
 
-1. RGB vs HSV: 
+**1. RGB vs HSV:** 
 I changed the initial RGB feature extraction to HSV which improved the accuracy from about 60% to about 75%, without changing any other parameters.
 
-2. Number of times the feature is captured for each object: 
+**2. Number of times the feature is captured for each object:** 
 Initially, this value was 5. Changing it upto 10 only decreased the accuracy of SVM. I started seeing a good improvement with values greater than 20. For 30, I got accuracy of about 85%. With 50, it touched 90%. Finally, I used 100, which gave me an accuracy of 99% for test world 1 objects, 96% with test world 2 objects and 95% with test world 3 objects. (All these values are with 'linear' kernel)
 
-3. 'linear' vs 'rbf': 
+**3. 'linear' vs 'rbf':** 
 With rbf kernel, I saw a slight decrease (2%-3%) in accuracy in all cases compared to linear kernel. Hence, I have used a 'linear' kernel for training SVM.
 
 #### Object Recognition:
 
-1. Extracted the color and normal Histogram features for each individual object extracted in Exercise 2.
+**1. Extracted the color and normal Histogram features for each individual object extracted in Exercise 2.**
 
-2. From the classifier obtained from model.sav file, the object is predicted. All these recognized objects are appended in a list detected_objects, and published on topic `/Detected_objects`
+**2. From the classifier obtained from model.sav file, the object is predicted. All these recognized objects are appended in a list detected_objects, and published on topic `/Detected_objects`**
 
 
 ![demo-1](https://user-images.githubusercontent.com/20687560/28748231-46b5b912-7467-11e7-8778-3095172b7b19.png)
@@ -116,10 +114,31 @@ Here's | A | Snappy | Table
 And here's another image! 
 ![demo-2](https://user-images.githubusercontent.com/20687560/28748286-9f65680e-7468-11e7-83dc-f1a32380b89c.png)
 
-I have implemented the main code for the project in `object_recognition.py`. Following steps are implemented for object recognition (in funtion pcl_callback) from the above three exercise:
+I have implemented the main code for the project in `object_recognition.py`. The code is able to recognize 100% of the objects in all test scenarios. The pcl_callback() function in the code is already explained above. The recognized object list in pcl_callback() function is then passed to function `pr2_mover()`. 
 
+Below I'll explain steps performed in function `pr2_mover()`.
 
+1. Get parameters from the parameter server '/object_list' which gives the sequence in which the objects are to be picked.
 
+2. For all the the parameters obtained, perform steps from step 3 to step 10.
+
+3. Check if the name of the object in paramter list is detected.
+
+4. If the name is not found, go to step 3 with next parameter in the parameter list.
+
+5. Else if name is found in the detected object list, continue with steps below.
+
+6. Calculate the centroid of the object.
+
+7. Obtain other required parameters of the object such as test scene number, Object name, arm name (left or right), pick position and  place position.
+
+8. Store all the parameters above in corresponding ROS datatypes.
+
+9. Make a yaml dictionary list to store the above paramters with the help of make_yaml_dict() function.
+
+10. Call the service pick place routine and pass all the object paramters.
+
+11. Save the yaml dictionary list on computer.
 
 
 
