@@ -37,7 +37,27 @@ You're reading it!
 ### Exercise 1, 2 and 3 pipeline implemented
 #### 1. Complete Exercise 1 steps. Pipeline for filtering and RANSAC plane fitting implemented.
 
+1. Convert ROS message to PCL
+
+2. Implement outlier filter to remove noise in camera image
+
+3. Perform Voxel Downgrid sampling to eliminate redundant computations
+
+4. Implement passthrough filter in Z direction to focus only on the table and object scene.
+
+5. Impement passthrough filter in X direction to remove edge of the table. Without this filter, table edge will appear even after RANSAC plain segmentation is performed.
+
+6. RANSAC plane segmentation is performed.
+
+7. The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation.
+
 #### 2. Complete Exercise 2 steps: Pipeline including clustering for segmentation implemented.  
+
+8. Euclidean clustering is performed to detect separate object clusters.
+
+9. Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering.
+
+10. Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.
 
 #### 2. Complete Exercise 3 Steps.  Features extracted and SVM trained.  Object recognition implemented.
 Here is an example of how to include an image in your writeup.
@@ -62,7 +82,10 @@ Here's | A | Snappy | Table
 And here's another image! 
 ![demo-2](https://user-images.githubusercontent.com/20687560/28748286-9f65680e-7468-11e7-83dc-f1a32380b89c.png)
 
-Spend some time at the end to discuss your code, what techniques you used, what worked and why, where the implementation might fail and how you might improve it if you were going to pursue this project further.  
+I have implemented the main code for the project in `object_recognition.py`. Following steps are implemented for object recognition (in funtion pcl_callback) from the above three exercise:
+
+
+
 
 
 
