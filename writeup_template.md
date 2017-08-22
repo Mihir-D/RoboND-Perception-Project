@@ -60,7 +60,7 @@ Note: Please refer to code [**object_recognition.py**](./pr2_robot/scripts/objec
 
 I have implemented following steps from Exercise 1:
 
-__1. Convert ROS message to PCL__
+1. __Convert ROS message to PCL__
 
 **2. Implement outlier filter to remove noise in camera image:** 
 As the image obtained from camera has a lot of noise, I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant. Refer the images below:
