@@ -12,7 +12,7 @@
 [image4]: ./Images/objects.png
 [image5]: ./Images/table.png
 [image6]: ./Images/pcl_cluster.png
-[image7]: ./Images/confusion_matrix.png
+[image7]: ./Images/confusion_matrix3.png
 [image8]: ./Images/object_recognition_test_scene1.png
 [image9]: ./Images/object_recognition_test_scene3.png
 [image10]: ./Images/picked1.png
@@ -53,7 +53,7 @@
 
 You're reading it!
 
-`Note: Please refer to code [**object_recognition.py**](./pr2_robot/scripts/object_recognition.py) and NOT project_template.py.`
+Note: Please refer to code [**object_recognition.py**](./pr2_robot/scripts/object_recognition.py) and NOT project_template.py.
 
 ### Exercise 1, 2 and 3 pipeline implemented. These comprise the pcl_callback() function in object_recognition.py.
 #### 1. Complete Exercise 1 steps. Pipeline for filtering and RANSAC plane fitting implemented.
@@ -63,7 +63,7 @@ I have implemented following steps from Exercise 1:
 **1. Convert ROS message to PCL**
 
 **2. Implement outlier filter to remove noise in camera image:** 
-As the image obtained from camera has a lot of noise (see the camera image published on topic name???), I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant. Refer the images below:
+As the image obtained from camera has a lot of noise, I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant. Refer the images below:
 
 **Original Camera Image:**
 
