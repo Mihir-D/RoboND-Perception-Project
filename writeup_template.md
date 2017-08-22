@@ -60,9 +60,9 @@ Note: Please refer to code [**object_recognition.py**](./pr2_robot/scripts/objec
 
 I have implemented following steps from Exercise 1:
 
-__1. Convert ROS message to PCL__
+1. __Convert ROS message to PCL__
 
-__2. Implement outlier filter to remove noise in camera image:__
+2. __Implement outlier filter to remove noise in camera image:__
 As the image obtained from camera has a lot of noise, I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant. Refer the images below:
 
 __Original Camera Image:__
@@ -74,19 +74,19 @@ __After filtering:__
 ![alt text][image3]
 
 
-__3. Perform Voxel Downgrid sampling to eliminate redundant computations:__ 
+3. __Perform Voxel Downgrid sampling to eliminate redundant computations:__ 
 I initially started with a Leaf size of 0.01. It would work well for the `test1.world`, but misidentified one or more objects in the other two test worlds and also couldn't identify one object in `test3.world`. I then reduced the leaf size till 0.003, at which all objects in all test scenes were recognized correctly. Refer image shown in step no. 7.
 
-__4. Implement passthrough filter in Z direction to focus only on the table and object scene:__ 
+4. __Implement passthrough filter in Z direction to focus only on the table and object scene:__ 
 I implemented this filter such that the output of the filter contained only the table and objects on the table. (It eliminates everything else e.g. floor etc. which lies outside of the band of passthrough filter).
 
-__5. Impement passthrough filter in X direction to remove edge of the table:__ 
+5. __Impement passthrough filter in X direction to remove edge of the table:__ 
 This filter removes the edge of the table which otherwise would appear along with objects when RANSAC plane segementation is performed for table plane. (note: similar results can also be obtained by finding an optimum lower limit for filtering performed in step 4.)
 
-__6. RANSAC plane segmentation is performed:__
+6. __RANSAC plane segmentation is performed:__
 I performed RANSAC plane segmentation to separate table from the objects. 
 
-__7. The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation:__ 
+7. __The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation:__ 
 The inliers of the RANSAC filtering output are the table points whereas the outliers are all objects points, as the object planes are not parallel to table plane. Thus table cloud and objects point cloud are extracted.
 
 Effect of filtering through steps 3-7:
@@ -101,27 +101,27 @@ __Table Only__
 
 #### 2. Complete Exercise 2 steps: Pipeline including clustering for segmentation implemented.  
 
-__8. Euclidean clustering is performed to detect separate object clusters:__ 
+8. __Euclidean clustering is performed to detect separate object clusters:__ 
 I found the appropriate range for cluster size for Euclidean clustering. For cluster size less than 5000, some large objects were getting ommitted in the filtering. Hence the upper limit is 5000. Also, lower limit if increased from 100 would eliminated the small objects after filtering.
 
-__9. Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering. See Image below__
+9. __Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering. See Image below__
 
 ![alt text][image6]
 
 
-__10. Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.__
+10. __Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.__
 
 #### 2. Complete Exercise 3 Steps.  Features extracted and SVM trained.  Object recognition implemented.
 
 #### Feature Extraction and training SVM:
 
-__1. RGB vs HSV:__ 
+1. __RGB vs HSV:__ 
 I changed the initial RGB feature extraction to HSV which improved the accuracy from about 60% to about 75%, without changing any other parameters.
 
-__2. Number of times the feature is captured for each object:__ 
+2. __Number of times the feature is captured for each object:__ 
 Initially, this value was 5. Changing it upto 10 only decreased the accuracy of SVM. I started seeing a good improvement with values greater than 20. For 30, I got accuracy of about 85%. With 50, it touched 90%. Finally, I used 100, which gave me an accuracy of 99% for test world 1 objects, 96% with test world 2 objects and 95% with test world 3 objects. (All these values are with 'linear' kernel)
 
-__3. 'linear' vs 'rbf':__ 
+3. __'linear' vs 'rbf':__ 
 With rbf kernel, I saw a slight decrease (2%-3%) in accuracy in all cases compared to linear kernel. Hence, I have used a 'linear' kernel for training SVM.
 
 
@@ -132,9 +132,9 @@ __Training Accuracy  and Confusion Matrix:__
 
 #### Object Recognition:
 
-__1. Extracted the color and normal Histogram features for each individual object extracted in Exercise 2.__
+1. __Extracted the color and normal Histogram features for each individual object extracted in Exercise 2.__
 
-__2. From the classifier obtained from model.sav file, the object is predicted. All these recognized objects are appended in a list detected_objects, and published on topic `/Detected_objects`__
+2. __From the classifier obtained from model.sav file, the object is predicted. All these recognized objects are appended in a list detected_objects, and published on topic `/Detected_objects`__
 
 
 __Object Recognition Test Scene 1:__
