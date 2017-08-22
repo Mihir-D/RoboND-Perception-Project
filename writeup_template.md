@@ -37,25 +37,45 @@ You're reading it!
 ### Exercise 1, 2 and 3 pipeline implemented
 #### 1. Complete Exercise 1 steps. Pipeline for filtering and RANSAC plane fitting implemented.
 
+I have implemented following steps from Exercise 1:
+
 1. Convert ROS message to PCL
 
-2. Implement outlier filter to remove noise in camera image
+2. Implement outlier filter to remove noise in camera image:
 
-3. Perform Voxel Downgrid sampling to eliminate redundant computations
+As the image obtained from camera has a lot of noise (see the camera image published on topic name???), I implemented the outlier removal filter to remove noise. To determine number of neighboring points to be analyzed, I tried different values in range 10-100 and found 30 to be suitably working. I had to reduce the threshold scale factor (i.e. standard deviation) to 0.01 as the noise was quite dominant.
 
-4. Implement passthrough filter in Z direction to focus only on the table and object scene.
+3. Perform Voxel Downgrid sampling to eliminate redundant computations:
 
-5. Impement passthrough filter in X direction to remove edge of the table. Without this filter, table edge will appear even after RANSAC plain segmentation is performed.
+I initially started with a Leaf size of 0.01. It would work well for the `test1.world`, but misidentified one or more objects in the other two test worlds and also couldn't identify one object in `test3.world`. I then reduced the leaf size till 0.003, at which all objects in all test scenes were recognized correctly.
+
+Image??
+
+4. Implement passthrough filter in Z direction to focus only on the table and object scene
+
+I implemented this filter such that the output of the filter contained only the table and objects on the table. (It eliminates everything else e.g. floor etc. which lies outside of the band of passthrough filter).
+
+5. Impement passthrough filter in X direction to remove edge of the table. 
+
+This filter removes the edge of the table which otherwise would appear along with objects when RANSAC plane segementation is performed for table plane. (note: similar results can also be obtained by finding an optimum lower limit for filtering performed in step 4.)
 
 6. RANSAC plane segmentation is performed.
 
+I performed RANSAC plane segmentation to separate table from the objects. 
+
 7. The inliers (table) and the outliers (objects) are extracted from RANSAC plane segmentation.
+
+The inliers of the RANSAC filtering output are the table points whereas the outliers are all objects points, as the object planes are not parallel to table plane. Thus table cloud and objects point cloud are extracted.
 
 #### 2. Complete Exercise 2 steps: Pipeline including clustering for segmentation implemented.  
 
 8. Euclidean clustering is performed to detect separate object clusters.
 
+I found the appropriate range for cluster size for Euclidean clustering. For cluster size less than 5000, some large objects were getting ommitted in the filtering. Hence the upper limit is 5000. Also, lower limit if increased from 100 would eliminated the small objects after filtering.
+
 9. Using cluster-masking, each cloud containing unique color is created. This helps to visualize the distincly identified objects in Euclidean clustering.
+
+image???
 
 10. Point cloud with noise removed, Objects' point cloud, Table point cloud and Detected objects' cloud are converted to ROS message type and published on respective ROS topics.
 
